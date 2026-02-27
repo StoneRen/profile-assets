@@ -2,8 +2,8 @@ name: Generate Contribution Chart
 
 on:
   schedule:
-    - cron: '0 1 * * *'  # 每天凌晨 1 点 UTC 执行
-  workflow_dispatch:      # 允许手动触发
+    - cron: '0 1 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,20 +13,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '20'
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
 
       - name: Generate contribution SVG
-        run: |
-          npx --yes github-contributions-chart@latest \
-            --username StoneRen \
-            --token ${{ secrets.GH_TOKEN }} \
-            --output contributions.svg \
-            --format svg \
-            --theme dracula
-        # theme 可选: standard, classic, dracula, halloween, teal, leftpad, martian, blue_navy, panda
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_USERNAME: StoneRen
+        run: python generate-chart.py
 
       - name: Commit and push
         run: |
