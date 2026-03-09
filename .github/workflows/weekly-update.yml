@@ -1,0 +1,54 @@
+name: Weekly Update
+
+on:
+  schedule:
+    # 每周一凌晨1点 (UTC时间周日17:00)
+    - cron: '0 17 * * 0'
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  fetch-feihua:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Fetch Feihua SVG
+        run: |
+          curl -o feihua.svg https://feihua.onrender.com/shici/stoneren
+      
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add feihua.svg
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update feihua.svg" && git push)
+
+  generate-chart:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install requests
+      
+      - name: Generate contribution chart
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_USERNAME: StoneRen
+        run: python generate-chart.py
+      
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add contributions.svg
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update contribution chart" && git push)
