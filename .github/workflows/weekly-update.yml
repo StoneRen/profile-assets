@@ -29,6 +29,7 @@ jobs:
           git diff --quiet && git diff --staged --quiet || (git commit -m "chore: update feihua.svg" && git push)
 
   generate-chart:
+    needs: fetch-feihua
     runs-on: ubuntu-latest
     
     steps:
