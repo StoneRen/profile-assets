@@ -54,15 +54,9 @@ PADDING_TOP = 30
 PADDING_BOTTOM = 24
 PADDING_RIGHT = 14
 
-# 颜色主题（GitHub 默认绿色）
-COLORS = ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"]
-
-def get_color(count):
-    if count == 0: return COLORS[0]
-    if count <= 3: return COLORS[1]
-    if count <= 6: return COLORS[2]
-    if count <= 9: return COLORS[3]
-    return COLORS[4]
+# 颜色主题通过 CSS 类 + prefers-color-scheme 媒体查询实现
+# 亮色: #ebedf0, #9be9a8, #40c463, #30a14e, #216e39
+# 暗色: #161b22, #0e4429, #006d32, #26a641, #39d353
 
 num_weeks = len(weeks)
 width = PADDING_LEFT + num_weeks * STEP + PADDING_RIGHT
@@ -88,25 +82,48 @@ for wi, week in enumerate(weeks):
     for day in week["contributionDays"]:
         x = PADDING_LEFT + wi * STEP
         y = PADDING_TOP + day["weekday"] * STEP
-        color = get_color(day["contributionCount"])
-        title = f"{day['contributionCount']} contributions on {day['date']}"
-        cells.append(f'<rect x="{x}" y="{y}" width="{CELL}" height="{CELL}" rx="2" fill="{color}"><title>{title}</title></rect>')
+        cnt = day["contributionCount"]
+        if cnt == 0: level = 0
+        elif cnt <= 3: level = 1
+        elif cnt <= 6: level = 2
+        elif cnt <= 9: level = 3
+        else: level = 4
+        title = f"{cnt} contributions on {day['date']}"
+        cells.append(f'<rect x="{x}" y="{y}" width="{CELL}" height="{CELL}" rx="2" class="c{level}"><title>{title}</title></rect>')
 
 month_svgs = []
 for wi, label in month_labels:
     x = PADDING_LEFT + wi * STEP
-    month_svgs.append(f'<text x="{x}" y="{PADDING_TOP - 6}" font-size="10" fill="#767676" font-family="sans-serif">{label}</text>')
+    month_svgs.append(f'<text x="{x}" y="{PADDING_TOP - 6}" font-size="10" class="label" font-family="sans-serif">{label}</text>')
 
 weekday_svgs = []
 for label, idx in zip(week_days, week_day_indices):
     y = PADDING_TOP + idx * STEP + CELL - 1
-    weekday_svgs.append(f'<text x="0" y="{y}" font-size="9" fill="#767676" font-family="sans-serif">{label}</text>')
+    weekday_svgs.append(f'<text x="0" y="{y}" font-size="9" class="label" font-family="sans-serif">{label}</text>')
 
 footer_y = height - 6
-footer = f'<text x="{PADDING_LEFT}" y="{footer_y}" font-size="10" fill="#767676" font-family="sans-serif">{total} contributions in the last year</text>'
+footer = f'<text x="{PADDING_LEFT}" y="{footer_y}" font-size="10" class="label" font-family="sans-serif">{total} contributions in the last year</text>'
 
 svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">
-  <rect width="{width}" height="{height}" rx="6" fill="#ffffff" stroke="#e1e4e8" stroke-width="1"/>
+  <style>
+    .bg {{ fill: #ffffff; stroke: #e1e4e8; }}
+    .label {{ fill: #767676; }}
+    .c0 {{ fill: #ebedf0; }}
+    .c1 {{ fill: #9be9a8; }}
+    .c2 {{ fill: #40c463; }}
+    .c3 {{ fill: #30a14e; }}
+    .c4 {{ fill: #216e39; }}
+    @media (prefers-color-scheme: dark) {{
+      .bg {{ fill: #0d1117; stroke: #30363d; }}
+      .label {{ fill: #8b949e; }}
+      .c0 {{ fill: #161b22; }}
+      .c1 {{ fill: #0e4429; }}
+      .c2 {{ fill: #006d32; }}
+      .c3 {{ fill: #26a641; }}
+      .c4 {{ fill: #39d353; }}
+    }}
+  </style>
+  <rect width="{width}" height="{height}" rx="6" class="bg" stroke-width="1"/>
   {''.join(month_svgs)}
   {''.join(weekday_svgs)}
   {''.join(cells)}

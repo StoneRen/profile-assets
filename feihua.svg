@@ -10,6 +10,12 @@
   font-weight: 400;
   font-display: fallback;
 }
+.main-text { fill: #36BCF7; }
+.sub-text { fill: #6B7280; }
+@media (prefers-color-scheme: dark) {
+  .main-text { fill: #58d1ff; }
+  .sub-text { fill: #9CA3AF; }
+}
 </style>
     <path id='path0'>
         <animate 
@@ -40,13 +46,13 @@
       x='0%' text-anchor='start'>
         <textPath xlink:href='#path0'>
           <tspan 
-            fill="#36BCF7" 
+            class="main-text"
             font-size="14">
             寒随一夜去，春逐五更来。
           </tspan>
           
           <tspan 
-            fill="#6B7280"
+            class="sub-text"
             font-size="12"
             font-style="italic"
             dy="20"
